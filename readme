@@ -1,0 +1,141 @@
+README.md
+
+markdown
+# Infrastructure as Code (IaC) with Terraform: Provisioning a Docker Container
+
+## Objective
+This project uses Terraform to provision a local Docker container running Nginx, a simple web server. The goal is to demonstrate Infrastructure as Code (IaC) by defining and managing a container using Terraform.
+
+## Tools
+- **Terraform**: A tool to define and manage infrastructure using code.
+- **Docker**: A platform to run containers (lightweight, portable software packages).
+
+## Prerequisites
+- Install Terraform: Download from `terraform.io` and ensure `terraform -version` works in your terminal.
+- Install Docker: Use Docker Desktop (Windows/Mac) or Docker Engine (Linux), and make sure it’s running.
+- A terminal (e.g., Command Prompt on Windows, Terminal on Mac/Linux).
+
+## Project Structure
+- `main.tf`: The Terraform configuration file defining the Docker image and container.
+- `terraform.tfstate`: Auto-generated file tracking the state of resources (created after `terraform apply`).
+- `.terraform/`: Auto-generated folder with provider plugins (created after `terraform init`).
+
+## Steps to Run
+
+### 1. Set Up the Project
+- Create a folder called `terraform-docker`:
+  bash
+  mkdir terraform-docker
+  cd terraform-docker
+  
+- Create a file named `main.tf` and add this code:
+  hcl
+  terraform {
+    required_providers {
+      docker = {
+        source  = "kreuzwerker/docker"
+        version = "~> 3.0"
+      }
+    }
+  }
+
+  provider "docker" {
+    host = "unix:///var/run/docker.sock"  # Linux/Mac; use "npipe:////./pipe/docker_engine" for Windows
+  }
+
+  resource "docker_image" "nginx" {
+    name         = "nginx:latest"
+    keep_locally = false
+  }
+
+  resource "docker_container" "nginx_container" {
+    image = docker_image.nginx.name
+    name  = "nginx-terraform"
+    ports {
+      internal = 80
+      external = 8082  # Maps port 8082 on your computer to port 80 in the container
+    }
+  }
+  
+- Save the file (e.g., `Ctrl + S` in Notepad, or `Ctrl + O`, Enter, `Ctrl + X` in nano).
+
+### 2. Initialize Terraform
+- Run:
+  bash
+  terraform init
+  
+- This downloads the Docker provider. Look for “Terraform has been successfully initialized!”
+
+### 3. Preview the Plan
+- Run:
+  bash
+  terraform plan
+  
+- This shows what Terraform will create (e.g., “2 to add”). It’s a dry run—no changes happen yet.
+
+### 4. Apply the Configuration
+- Run:
+  bash
+  terraform apply
+  
+- Type `yes` when prompted. This creates the Nginx container.
+- Test it: Open `http://localhost:8082` in your browser to see “Welcome to nginx!”.
+- Output: “Apply complete! Resources: 2 added, 0 changed, 0 destroyed” (or “1 added” if the image was cached).
+
+### 5. Check Terraform State
+- Run:
+  bash
+  terraform state list
+  
+- This lists managed resources, like:
+  
+  docker_container.nginx_container
+  docker_image.nginx
+  
+
+### 6. Destroy the Infrastructure
+- Run:
+  bash
+  terraform destroy
+  
+- Type `yes` when prompted. This removes the container and image.
+- Output: “Destroy complete! Resources: 2 destroyed.”
+
+## Deliverables
+- **`main.tf`**: The configuration file (see Step 1).
+- **Execution Logs**: Terminal output from these commands (save manually if needed):
+  - `terraform init` (initialization log)
+  - `terraform plan` (plan log)
+  - `terraform apply` (apply log)
+  - `terraform state list` (state log)
+  - `terraform destroy` (destroy log)
+
+## Troubleshooting
+- **Port Conflict**: If port 8082 is in use, edit `main.tf` to change `external = 8082` to another port (e.g., 8083), then re-run `terraform apply`.
+- **Docker Not Running**: Start Docker Desktop (Windows/Mac) or the Docker service (Linux).
+- **Terraform Not Found**: Install Terraform and ensure it’s in your PATH.
+
+## Notes
+- The container runs Nginx, accessible at `http://localhost:8082` (or your chosen port).
+- Use `docker ps` to see the running container manually if curious!
+
+---
+
+Happy coding! This project shows how Terraform can manage Docker containers as code.
+
+
+---
+
+### How to Use This:
+1. Copy the text above.
+2. In your terraform-docker folder, create a file named README.md:
+   - Windows: notepad README.md, paste the text, save with Ctrl + S.
+   - Mac/Linux: nano README.md, paste, save with Ctrl + O, Enter, Ctrl + X.
+3. It’s ready! You can view it nicely formatted on GitHub or with a Markdown viewer.
+
+#### Next Step:
+Since you got “Apply complete,” let’s finish the task:
+- Run terraform state list (Step 5) and tell me what it shows.
+- Then, we’ll do terraform destroy (Step 6) to clean up.
+
+How’s that sound? Let me know your terraform state list output or if you want to tweak the README!
